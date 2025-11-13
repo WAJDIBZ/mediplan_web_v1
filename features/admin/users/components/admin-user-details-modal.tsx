@@ -45,6 +45,18 @@ export function AdminUserDetailsModal({ open, onClose, user }: AdminUserDetailsM
           </p>
         </section>
         <section className="space-y-3">
+          {user.gender && (
+            <p className="text-sm text-[#475569]">
+              <span className="font-semibold text-[#0f172a]">Genre :</span>{" "}
+              {user.gender === "MALE" ? "Homme" : user.gender === "FEMALE" ? "Femme" : "Autre"}
+            </p>
+          )}
+          {user.dateOfBirth && (
+            <p className="text-sm text-[#475569]">
+              <span className="font-semibold text-[#0f172a]">Date de naissance :</span>{" "}
+              {new Date(user.dateOfBirth).toLocaleDateString("fr-FR")}
+            </p>
+          )}
           {user.specialty && (
             <p className="text-sm text-[#475569]">
               <span className="font-semibold text-[#0f172a]">Spécialité :</span> {user.specialty}
@@ -62,7 +74,15 @@ export function AdminUserDetailsModal({ open, onClose, user }: AdminUserDetailsM
           )}
           {user.insuranceNumber && (
             <p className="text-sm text-[#475569]">
-              <span className="font-semibold text-[#0f172a]">Numéro d’assurance :</span> {user.insuranceNumber}
+              <span className="font-semibold text-[#0f172a]">Numéro d'assurance :</span> {user.insuranceNumber}
+            </p>
+          )}
+          {user.address?.line1 && (
+            <p className="text-sm text-[#475569]">
+              <span className="font-semibold text-[#0f172a]">Adresse :</span> {user.address.line1}
+              {user.address.line2 && `, ${user.address.line2}`}
+              {user.address.city && `, ${user.address.city}`}
+              {user.address.zip && ` ${user.address.zip}`}
             </p>
           )}
           {user.emergencyContact?.name && (
