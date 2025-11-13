@@ -25,7 +25,7 @@ export function useForm<T extends Record<string, unknown>>({ initialValues, sche
           event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
         ) => {
           const element = event.target;
-          const newValue = element.type === "checkbox" ? element.checked : element.value;
+          const newValue = element.type === "checkbox" ? (element as HTMLInputElement).checked : element.value;
           setValues((current) => ({ ...current, [name]: newValue }));
         },
         onBlur: () => {
@@ -61,7 +61,7 @@ export function useForm<T extends Record<string, unknown>>({ initialValues, sche
   );
 
   const handleSubmit = useCallback(
-    async (submitter: (values: T) => Promise<void> | void) =>
+    (submitter: (values: T) => Promise<void> | void) =>
       async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsSubmitted(true);
