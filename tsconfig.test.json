@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "outDir": ".tmp/test-build",
+    "module": "commonjs",
+    "target": "ES2019",
+    "moduleResolution": "node",
+    "rootDir": ".",
+    "skipLibCheck": true
+  },
+  "include": ["lib/**/*.ts", "types/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules"]
+}
