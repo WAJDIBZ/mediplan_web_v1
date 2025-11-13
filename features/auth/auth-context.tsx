@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState ,useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { fetchSession, login as loginRequest } from "./services";
 import type { AuthResponse, AuthState, AuthUser, LoginRequest } from "./types";
