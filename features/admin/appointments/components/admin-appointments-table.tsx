@@ -1,0 +1,87 @@
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
+import { formatDate, formatTime } from "@/lib/date";
+import type { AdminAppointmentListItem } from "../types";
+
+function renderStatusLabel(status: AdminAppointmentListItem["statut"]) {
+  switch (status) {
+    case "CONFIRME":
+      return <Badge variant="success">Confirmé</Badge>;
+    case "PLANIFIE":
+      return <Badge variant="neutral">Planifié</Badge>;
+    case "ANNULE":
+      return <Badge variant="danger">Annulé</Badge>;
+    case "HONORE":
+      return <Badge variant="success">Honoré</Badge>;
+    default:
+      return <Badge>{status}</Badge>;
+  }
+}
+
+export function AdminAppointmentsTable({ appointments }: { appointments: AdminAppointmentListItem[] }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>Rendez-vous</Th>
+              <Th>Médecin</Th>
+              <Th>Patient</Th>
+              <Th>Statut</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {appointments.map((appointment) => {
+              const start = new Date(appointment.debut);
+              const end = new Date(appointment.fin);
+
+              return (
+                <Tr key={appointment.id}>
+                  <Td>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-[#0f172a]">
+                        {formatDate(start, { weekday: "long", day: "2-digit", month: "long" })}
+                      </span>
+                      <span className="text-xs text-[#475569]">
+                        {formatTime(start)} - {formatTime(end)}
+                      </span>
+                      <span className="text-xs text-[#2563eb]">{appointment.motif}</span>
+                      {appointment.commentaire && (
+                        <span className="text-xs text-[#94a3b8]">{appointment.commentaire}</span>
+                      )}
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col gap-1 text-sm">
+                      <span className="font-semibold text-[#0f172a]">{appointment.medecin.fullName}</span>
+                      {appointment.medecin.specialty && (
+                        <span className="text-xs text-[#64748b]">{appointment.medecin.specialty}</span>
+                      )}
+                      {appointment.medecin.email && (
+                        <span className="text-xs text-[#94a3b8]">{appointment.medecin.email}</span>
+                      )}
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col gap-1 text-sm">
+                      <span className="font-semibold text-[#0f172a]">{appointment.patient.fullName}</span>
+                      {appointment.patient.email && (
+                        <span className="text-xs text-[#94a3b8]">{appointment.patient.email}</span>
+                      )}
+                      {appointment.patient.phone && (
+                        <span className="text-xs text-[#64748b]">{appointment.patient.phone}</span>
+                      )}
+                    </div>
+                  </Td>
+                  <Td>{renderStatusLabel(appointment.statut)}</Td>
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}

@@ -61,9 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: mapTokensToUser(tokens),
       }));
     });
-    return () => {
-      unsubscribe();
-    };
+    return unsubscribe;
   }, []);
 
   useEffect(() => {
