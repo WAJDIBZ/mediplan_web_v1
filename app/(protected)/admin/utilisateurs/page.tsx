@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/feedback/toast-provider";
 import { AdminUsersFilters } from "@/features/admin/users/components/admin-users-filters";
 import { AdminUsersTable } from "@/features/admin/users/components/admin-users-table";
@@ -39,6 +40,21 @@ export default function AdminUsersPage() {
   const [isExporting, setExporting] = useState(false);
   const { data, error, isLoading, reload } = useAdminUsers(filters);
   const { notify } = useToast();
+
+  const summary = useMemo(() => {
+    if (!data) {
+      return null;
+    }
+    const pageActive = data.content.filter((user) => user.active).length;
+    const pageInactive = data.content.length - pageActive;
+    return {
+      total: data.totalElements,
+      activeShare:
+        data.content.length > 0 ? Math.round((pageActive / data.content.length) * 100) : undefined,
+      pageActive,
+      pageInactive,
+    };
+  }, [data]);
 
   const applyFilters = (next: AdminUserFilters) => {
     const normalized = { ...DEFAULT_FILTERS, ...next };
@@ -131,7 +147,53 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      <section className="relative overflow-hidden rounded-[32px] border border-[#c7d2fe]/60 bg-gradient-to-br from-[#eef2ff] via-white to-[#f0f9ff] p-8 shadow-inner">
+        <div className="absolute inset-0 opacity-60" aria-hidden>
+          <div className="absolute -left-8 top-10 h-28 w-28 rounded-full bg-sky-300/40 blur-3xl" />
+          <div className="absolute bottom-0 right-6 h-32 w-32 rounded-full bg-indigo-300/30 blur-3xl" />
+        </div>
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-4">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-[#4338ca]">
+              👥 Administration des comptes
+            </span>
+            <div>
+              <h1 className="text-3xl font-semibold text-[#1e1b4b]">Utilisateurs & rôles</h1>
+              <p className="mt-3 max-w-2xl text-sm text-[#312e81]/80">
+                Centralisez la gestion des accès, contrôlez les rôles et pilotez l’activation de vos équipes en temps réel.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {summary ? (
+              <>
+                <div className="rounded-2xl border border-[#e0e7ff] bg-white/80 px-5 py-4 text-sm text-[#312e81] shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#6366f1]">Total référencé</p>
+                  <p className="mt-2 text-2xl font-semibold text-[#1e1b4b]">{summary.total}</p>
+                  <p className="mt-1 text-xs text-[#6366f1]/80">Tous utilisateurs confondus</p>
+                </div>
+                <div className="rounded-2xl border border-[#e0e7ff] bg-white/80 px-5 py-4 text-sm text-[#312e81] shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#6366f1]">Actifs (page)</p>
+                  <p className="mt-2 text-2xl font-semibold text-[#1e1b4b]">
+                    {summary.pageActive}
+                    {summary.activeShare !== undefined && (
+                      <span className="ml-2 text-xs font-semibold text-[#818cf8]">{summary.activeShare}%</span>
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs text-[#6366f1]/80">{summary.pageInactive} inactif(s) à requalifier</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <Skeleton className="h-28 w-56 rounded-2xl bg-slate-200/80" />
+                <Skeleton className="h-28 w-56 rounded-2xl bg-slate-200/80" />
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
       <AdminUsersFilters
         values={draftFilters}
         onChange={(next) => setDraftFilters(next)}
@@ -143,7 +205,7 @@ export default function AdminUsersPage() {
       />
 
       {error && (
-        <EmptyState className="py-16">
+        <EmptyState className="rounded-[28px] border border-rose-200/70 bg-rose-50/80 py-16">
           <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#fee2e2] text-[#b91c1c]">
             ⚠️
           </span>

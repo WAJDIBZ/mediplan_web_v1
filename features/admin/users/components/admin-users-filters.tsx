@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/cn";
 import type { AdminUserFilters } from "../types";
 
 interface AdminUsersFiltersProps {
@@ -40,8 +41,18 @@ export function AdminUsersFilters({ values, onChange, onApply, onReset, onCreate
     onReset();
   };
 
+  const handleQuickFilter = (patch: Partial<AdminUserFilters>) => {
+    if (disabled) return;
+    const next = { ...values, ...patch, page: 0 };
+    onChange(next);
+    onApply(next);
+  };
+
   return (
-    <form className="grid gap-4 rounded-3xl border border-[#e2e8f0] bg-white p-6 shadow-sm" onSubmit={handleSubmit}>
+    <form
+      className="space-y-6 overflow-hidden rounded-[28px] border border-[#e0e7ff] bg-white/95 p-6 shadow-lg shadow-indigo-950/5"
+      onSubmit={handleSubmit}
+    >
       <div className="grid gap-4 md:grid-cols-5">
         <div className="md:col-span-2">
           <Label htmlFor="search">Recherche</Label>
@@ -94,8 +105,33 @@ export function AdminUsersFilters({ values, onChange, onApply, onReset, onCreate
           />
         </div>
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-3">
+          {[
+            { label: "Médecins actifs", patch: { role: "MEDECIN", active: "true" as AdminUserFilters["active"] } },
+            { label: "Admins", patch: { role: "ADMIN", active: "" as AdminUserFilters["active"] } },
+            { label: "Désactivés", patch: { active: "false" as AdminUserFilters["active"] } },
+          ].map((chip) => {
+            const isActive = Object.entries(chip.patch).every(([key, value]) => (values as Record<string, unknown>)[key] === value);
+            return (
+              <button
+                key={chip.label}
+                type="button"
+                disabled={disabled}
+                onClick={() => handleQuickFilter(chip.patch)}
+                className={cn(
+                  "rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition duration-200",
+                  isActive
+                    ? "border-[#4338ca] bg-[#4338ca] text-white shadow-[0_8px_20px_rgba(79,70,229,0.25)]"
+                    : "border-slate-200 bg-white text-[#4338ca] hover:border-[#a5b4fc] hover:bg-[#eef2ff]",
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={disabled}>
             Appliquer les filtres
           </Button>
@@ -103,7 +139,13 @@ export function AdminUsersFilters({ values, onChange, onApply, onReset, onCreate
             Réinitialiser
           </Button>
         </div>
-        <div className="flex gap-3">
+      </div>
+
+      <div className="flex flex-wrap justify-between gap-3 border-t border-slate-200/70 pt-4">
+        <div className="text-xs text-slate-500">
+          Exportez les comptes pour partager vos rapports ou créez rapidement un nouvel accès.
+        </div>
+        <div className="flex flex-wrap gap-3">
           <Button type="button" variant="secondary" disabled={disabled} onClick={onExport}>
             Export CSV
           </Button>

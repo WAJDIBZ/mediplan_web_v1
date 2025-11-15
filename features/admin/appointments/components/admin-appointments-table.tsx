@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
+import { cn } from "@/lib/cn";
 import { formatDate, formatTime } from "@/lib/date";
 import type { AdminAppointmentListItem } from "../types";
 
@@ -21,7 +22,7 @@ function renderStatusLabel(status: AdminAppointmentListItem["statut"]) {
 
 export function AdminAppointmentsTable({ appointments }: { appointments: AdminAppointmentListItem[] }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border border-sky-100">
       <CardContent className="p-0">
         <Table>
           <Thead>
@@ -33,21 +34,29 @@ export function AdminAppointmentsTable({ appointments }: { appointments: AdminAp
             </Tr>
           </Thead>
           <Tbody>
-            {appointments.map((appointment) => {
+            {appointments.map((appointment, index) => {
               const start = new Date(appointment.debut);
               const end = new Date(appointment.fin);
+              const isEven = index % 2 === 0;
 
               return (
-                <Tr key={appointment.id}>
+                <Tr
+                  key={appointment.id}
+                  className={cn(
+                    "group transition duration-200 hover:bg-sky-50/80",
+                    isEven ? "bg-white" : "bg-sky-50/40",
+                  )}
+                >
                   <Td>
                     <div className="flex flex-col gap-1">
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#0f172a]">
+                        <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
                         {formatDate(start, { weekday: "long", day: "2-digit", month: "long" })}
                       </span>
                       <span className="text-xs text-[#475569]">
                         {formatTime(start)} - {formatTime(end)}
                       </span>
-                      <span className="text-xs text-[#2563eb]">{appointment.motif}</span>
+                      <span className="text-xs font-semibold text-[#0f766e]">{appointment.motif}</span>
                       {appointment.commentaire && (
                         <span className="text-xs text-[#94a3b8]">{appointment.commentaire}</span>
                       )}

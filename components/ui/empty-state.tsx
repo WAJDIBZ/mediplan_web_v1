@@ -7,7 +7,8 @@ export function EmptyState({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#cbd5f5] bg-[#f8fafc] px-6 py-12 text-center text-sm text-[#475569]",
+        "flex flex-col items-center justify-center gap-4 rounded-[28px] border border-dashed border-sky-200/80 bg-white/60 px-6 py-14 text-center text-sm text-slate-500 shadow-inner shadow-sky-900/5 backdrop-blur",
+        "animate-fade-soft",
         className,
       )}
       {...props}

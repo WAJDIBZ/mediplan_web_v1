@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="bg-[#f1f5f9]">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#f1f5f9] text-[#0f172a]`}>
+    <html lang="fr" className="bg-transparent">
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-transparent text-[#0f172a]`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
