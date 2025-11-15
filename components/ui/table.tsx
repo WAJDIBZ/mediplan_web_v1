@@ -22,3 +22,14 @@ export function TableHeaderCell({ className, ...props }: HTMLAttributes<HTMLTabl
 export function TableCell({ className, ...props }: HTMLAttributes<HTMLTableCellElement>) {
   return <td className={cn("px-4 py-4 align-top text-sm text-[#0f172a]", className)} {...props} />;
 }
+
+export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <tbody className={cn("", className)} {...props} />;
+}
+
+// Aliases for convenience
+export { TableHead as Thead };
+export { TableBody as Tbody };
+export { TableRow as Tr };
+export { TableHeaderCell as Th };
+export { TableCell as Td };

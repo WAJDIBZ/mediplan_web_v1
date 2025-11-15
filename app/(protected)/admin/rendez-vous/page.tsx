@@ -25,7 +25,7 @@ const PAGE_SIZE = 10;
 
 export default function AdminAppointmentsPage() {
   const [filters, setFilters] = useState<AdminAppointmentsFilters>({ page: 0, size: PAGE_SIZE });
-  const { data, error, isLoading, mutate } = useAdminAppointments(filters);
+  const { data, error, isLoading, reload } = useAdminAppointments(filters);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -128,7 +128,7 @@ export default function AdminAppointmentsPage() {
             disabled={isLoading}
             onClick={() => {
               setFilters({ page: 0, size: PAGE_SIZE });
-              mutate();
+              void reload();
             }}
           >
             Réinitialiser
@@ -172,7 +172,7 @@ export default function AdminAppointmentsPage() {
               <h2 className="text-lg font-semibold text-[#0f172a]">Agenda consolidé</h2>
               <p className="text-sm text-[#64748b]">{subtitle}</p>
             </div>
-            <Button type="button" variant="secondary" onClick={() => mutate()} disabled={isLoading}>
+            <Button type="button" variant="secondary" onClick={() => void reload()} disabled={isLoading}>
               Actualiser
             </Button>
           </div>

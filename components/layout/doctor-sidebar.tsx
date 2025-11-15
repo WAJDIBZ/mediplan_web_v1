@@ -21,6 +21,7 @@ export function DoctorSidebarLayout({ children }: DoctorSidebarProps) {
         <nav className="mt-6 flex flex-col gap-2">
           <SidebarLink href="/medecin" label="Tableau de bord" icon="🩺" />
           <SidebarLink href="/medecin/calendrier" label="Calendrier" icon="🗓️" />
+          <SidebarLink href="/medecin/horaires" label="Mes horaires" icon="⏰" />
           <SidebarLink href="/medecin/patients" label="Patients" icon="👤" />
           <SidebarLink href="/medecin/ordonnances" label="Ordonnances" icon="💊" />
         </nav>

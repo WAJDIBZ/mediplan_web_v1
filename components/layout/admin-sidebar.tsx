@@ -22,6 +22,7 @@ export function AdminSidebarLayout({ children }: AdminSidebarProps) {
           <SidebarLink href="/admin" label="Tableau de bord" icon="📊" />
           <SidebarLink href="/admin/utilisateurs" label="Utilisateurs" icon="👥" />
           <SidebarLink href="/admin/rendez-vous" label="Rendez-vous" icon="📅" />
+          <SidebarLink href="/admin/specialisations" label="Spécialisations" icon="🏥" />
           <SidebarLink href="/admin/statistiques" label="Statistiques" icon="📈" />
         </nav>
         <div className="mt-auto rounded-2xl bg-[#2563eb] p-5 text-white shadow-xl">

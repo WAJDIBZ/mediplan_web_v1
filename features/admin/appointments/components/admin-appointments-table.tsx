@@ -54,26 +54,34 @@ export function AdminAppointmentsTable({ appointments }: { appointments: AdminAp
                     </div>
                   </Td>
                   <Td>
-                    <div className="flex flex-col gap-1 text-sm">
-                      <span className="font-semibold text-[#0f172a]">{appointment.medecin.fullName}</span>
-                      {appointment.medecin.specialty && (
-                        <span className="text-xs text-[#64748b]">{appointment.medecin.specialty}</span>
-                      )}
-                      {appointment.medecin.email && (
-                        <span className="text-xs text-[#94a3b8]">{appointment.medecin.email}</span>
-                      )}
-                    </div>
+                    {appointment.medecin ? (
+                      <div className="flex flex-col gap-1 text-sm">
+                        <span className="font-semibold text-[#0f172a]">{appointment.medecin.fullName}</span>
+                        {appointment.medecin.specialty && (
+                          <span className="text-xs text-[#64748b]">{appointment.medecin.specialty}</span>
+                        )}
+                        {appointment.medecin.email && (
+                          <span className="text-xs text-[#94a3b8]">{appointment.medecin.email}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[#94a3b8]">Non assigné</span>
+                    )}
                   </Td>
                   <Td>
-                    <div className="flex flex-col gap-1 text-sm">
-                      <span className="font-semibold text-[#0f172a]">{appointment.patient.fullName}</span>
-                      {appointment.patient.email && (
-                        <span className="text-xs text-[#94a3b8]">{appointment.patient.email}</span>
-                      )}
-                      {appointment.patient.phone && (
-                        <span className="text-xs text-[#64748b]">{appointment.patient.phone}</span>
-                      )}
-                    </div>
+                    {appointment.patient ? (
+                      <div className="flex flex-col gap-1 text-sm">
+                        <span className="font-semibold text-[#0f172a]">{appointment.patient.fullName}</span>
+                        {appointment.patient.email && (
+                          <span className="text-xs text-[#94a3b8]">{appointment.patient.email}</span>
+                        )}
+                        {appointment.patient.phone && (
+                          <span className="text-xs text-[#64748b]">{appointment.patient.phone}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[#94a3b8]">Non renseigné</span>
+                    )}
                   </Td>
                   <Td>{renderStatusLabel(appointment.statut)}</Td>
                 </Tr>

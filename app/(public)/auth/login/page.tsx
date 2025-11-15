@@ -31,7 +31,7 @@ export default function LoginPage() {
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
     try {
-      await login(values);
+      await login({ email: values.email || "", password: values.password || "" });
       notify({
         variant: "success",
         title: "Connexion réussie",

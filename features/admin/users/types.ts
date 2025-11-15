@@ -29,6 +29,7 @@ export interface AdminUserListItem {
 export interface AdminUserDetails extends AdminUserListItem {
   phone?: string;
   gender?: string;
+  dateOfBirth?: string;
   specialty?: string;
   licenseNumber?: string;
   yearsOfExperience?: number;
@@ -59,6 +60,8 @@ export interface AdminCreateUserPayload {
   role: UserRole;
   active?: boolean;
   phone?: string;
+  gender?: string;
+  dateOfBirth?: string;
   specialty?: string;
   licenseNumber?: string;
   yearsOfExperience?: number;

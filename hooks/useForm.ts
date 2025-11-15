@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useCallback, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useMemo, useRef, useState } from "react";
 import type { ValidationResult } from "@/lib/validation";
 
 interface Schema<T> {
@@ -11,6 +11,7 @@ export interface UseFormOptions<T extends Record<string, unknown>> {
 }
 
 export function useForm<T extends Record<string, unknown>>({ initialValues, schema }: UseFormOptions<T>) {
+  const initialValuesRef = useRef(initialValues);
   const [values, setValues] = useState<T>(initialValues);
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +62,7 @@ export function useForm<T extends Record<string, unknown>>({ initialValues, sche
   );
 
   const handleSubmit = useCallback(
-    async (submitter: (values: T) => Promise<void> | void) =>
+    (submitter: (values: T) => Promise<void> | void) =>
       async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsSubmitted(true);
@@ -90,10 +91,10 @@ export function useForm<T extends Record<string, unknown>>({ initialValues, sche
   }, []);
 
   const reset = useCallback((nextValues?: Partial<T>) => {
-    setValues({ ...initialValues, ...(nextValues ?? {}) });
+    setValues({ ...initialValuesRef.current, ...(nextValues ?? {}) });
     setErrors({});
     setIsSubmitted(false);
-  }, [initialValues]);
+  }, []);
 
   const formState = useMemo(
     () => ({
