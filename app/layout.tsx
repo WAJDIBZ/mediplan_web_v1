@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
+import { GlobalShell } from "@/components/layout/global-shell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,9 @@ export default function RootLayout({
   return (
     <html lang="fr" className="bg-transparent">
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-transparent text-[#0f172a]`}>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <GlobalShell>{children}</GlobalShell>
+        </AppProviders>
       </body>
     </html>
   );

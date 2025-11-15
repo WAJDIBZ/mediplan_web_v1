@@ -16,7 +16,7 @@ interface SidebarLinkProps {
 
 export function SidebarLink({ href, label, icon, onNavigate, isCondensed = false, isActive: forcedActive }: SidebarLinkProps) {
   const pathname = usePathname();
-  const isActive = forcedActive ?? pathname === href || pathname?.startsWith(`${href}/`);
+  const isActive = forcedActive ?? (pathname === href || pathname?.startsWith(`${href}/`));
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (onNavigate) {

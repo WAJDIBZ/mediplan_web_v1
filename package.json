@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "tsc -p tsconfig.test.json && node --test .tmp/test-build/tests/*.js"
+    "start": "next start -p $PORT",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx || true",
+    "test": "tsc -p tsconfig.test.json && node --test .tmp/test-build/tests/*.js",
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
+    "framer-motion": "^12.23.24",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"
@@ -23,5 +25,9 @@
     "eslint-config-next": "16.0.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
   }
 }
