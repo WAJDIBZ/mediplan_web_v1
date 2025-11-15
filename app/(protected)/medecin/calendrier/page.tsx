@@ -1,21 +1,72 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+
+import { CalendarIcon, ClockIcon } from "@/components/icons/mediplan-icons";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { buildMonthDays, formatDate } from "@/lib/date";
 import { useCalendrierRendezVous } from "@/features/medecin/calendrier/use-calendrier";
-import { confirmerRendezVous, annulerRendezVous, marquerHonore, marquerAbsent } from "@/features/medecin/calendrier/rdv-api";
+import {
+  confirmerRendezVous,
+  annulerRendezVous,
+  marquerHonore,
+  marquerAbsent,
+} from "@/features/medecin/calendrier/rdv-api";
+
+const dayNames = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] as const;
+
+const statusBadge: Record<
+  "PLANIFIE" | "CONFIRME" | "ANNULE" | "HONORE" | "ABSENT",
+  { label: string; variant: "warning" | "success" | "danger" | "info" | "neutral" }
+> = {
+  PLANIFIE: { label: "Planifié", variant: "warning" },
+  CONFIRME: { label: "Confirmé", variant: "success" },
+  ANNULE: { label: "Annulé", variant: "danger" },
+  HONORE: { label: "Honoré", variant: "info" },
+  ABSENT: { label: "Absent", variant: "neutral" },
+};
+
+function CalendarSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <Skeleton className="h-10 w-48" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-28" />
+          <Skeleton className="h-10 w-28" />
+        </div>
+      </div>
+      <div className="grid grid-cols-7 gap-3">
+        {dayNames.map((day) => (
+          <div key={day} className="h-6 rounded-full bg-slate-200/80" />
+        ))}
+        {Array.from({ length: 35 }).map((_, index) => (
+          <Skeleton key={index} className="h-28 rounded-3xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function MedecinCalendarPage() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { events, isLoading, error, reload } = useCalendrierRendezVous(currentDate.getFullYear(), currentDate.getMonth());
+  const { events, isLoading, error, reload } = useCalendrierRendezVous(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+  );
 
-  const monthDays = useMemo(() => buildMonthDays(currentDate.getFullYear(), currentDate.getMonth()), [currentDate]);
+  const monthDays = useMemo(
+    () => buildMonthDays(currentDate.getFullYear(), currentDate.getMonth()),
+    [currentDate],
+  );
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, typeof events>();
@@ -35,87 +86,152 @@ export default function MedecinCalendarPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#0f172a]">Calendrier des rendez-vous</h1>
-          <p className="text-sm text-[#64748b]">Visualisez vos consultations planifiées et anticipez les ajustements.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="secondary" onClick={() => handleNavigate(-1)}>
-            Mois précédent
-          </Button>
-          <div className="rounded-xl bg-[#eff6ff] px-4 py-2 text-sm font-semibold text-[#1d4ed8]">
-            {formatDate(currentDate, { month: "long", year: "numeric" })}
-          </div>
-          <Button variant="secondary" onClick={() => handleNavigate(1)}>
-            Mois suivant
-          </Button>
-        </div>
-      </div>
-
-      {isLoading && (
-        <div className="rounded-3xl border border-[#e2e8f0] bg-white p-12 text-center shadow-sm">
-          <p className="text-[#64748b]">Chargement du calendrier...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 shadow-sm">
-          <p className="text-sm text-red-800">Erreur : {error.message}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && (
-        <div className="grid grid-cols-7 gap-3 rounded-3xl border border-[#e2e8f0] bg-white p-6 shadow-sm">
-          {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-            <div key={day} className="text-center text-xs font-semibold uppercase tracking-wide text-[#94a3b8]">
-              {day}
-            </div>
-          ))}
-          {monthDays.map((day) => {
-            const iso = day.date.toISOString().split("T")[0];
-            const events = eventsByDate.get(iso) ?? [];
-            const isToday = day.isToday;
-            return (
-              <div
-                key={iso}
-                className={`min-h-[120px] rounded-2xl border p-3 transition ${
-                  day.isCurrentMonth ? "border-[#e2e8f0] bg-[#f8fafc] hover:border-[#2563eb]" : "border-transparent bg-transparent text-[#94a3b8]"
-                } ${isToday ? "ring-2 ring-[#2563eb]" : ""}`}
-              >
-                <div className="flex items-center justify-between text-sm font-semibold text-[#0f172a]">
-                  <span>{day.date.getDate()}</span>
-                  {events.length > 0 && (
-                    <span className="rounded-full bg-[#2563eb]/10 px-2 text-xs font-semibold text-[#1d4ed8]">
-                      {events.length}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-3 space-y-2 text-xs">
-                  {events.map((event) => {
-                    const time = new Date(event.heureDebut).toLocaleTimeString("fr-FR", { 
-                      hour: "2-digit", 
-                      minute: "2-digit" 
-                    });
-                    return (
-                      <button
-                        key={event.id}
-                        type="button"
-                        onClick={() => setSelectedEventId(event.id)}
-                        className="w-full rounded-xl border border-[#cbd5f5] bg-white px-2 py-2 text-left text-[#1f2937] hover:border-[#2563eb]"
-                      >
-                        <p className="font-semibold">{time}</p>
-                        <p className="truncate text-[11px] text-[#64748b]">{event.patientName}</p>
-                      </button>
-                    );
-                  })}
-                </div>
+    <div className="space-y-10 animate-in-up">
+      <section className="relative overflow-hidden rounded-[32px] border border-white/60 bg-white/80 p-8 shadow-xl shadow-slate-900/10">
+        <div
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_rgba(79,70,229,0.12),_rgba(224,242,254,0.65))]"
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <Badge variant="info" className="w-fit bg-white/70 text-sky-600">
+              Calendrier dynamique
+            </Badge>
+            <h1 className="text-3xl font-semibold text-slate-900">Votre agenda médical</h1>
+            <p className="max-w-xl text-sm text-slate-600">
+              Naviguez entre vos créneaux, anticipez les absences et confirmez vos rendez-vous en un instant.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
+              <div className="flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2">
+                <CalendarIcon className="h-4 w-4 text-sky-500" />
+                <span>{events.length} rendez-vous ce mois-ci</span>
               </div>
-            );
-          })}
+              <div className="flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2">
+                <ClockIcon className="h-4 w-4 text-indigo-500" />
+                <span>{formatDate(currentDate, { month: "long", year: "numeric" })}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="secondary" onClick={() => handleNavigate(-1)}>
+              Mois précédent
+            </Button>
+            <Button variant="secondary" onClick={() => setCurrentDate(new Date())}>
+              Aujourd’hui
+            </Button>
+            <Button variant="secondary" onClick={() => handleNavigate(1)}>
+              Mois suivant
+            </Button>
+          </div>
         </div>
-      )}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[3fr_1fr]">
+        <Card className="h-full">
+          <CardHeader className="flex-col items-start gap-2">
+            <CardTitle className="text-xl text-slate-900">Vue mensuelle</CardTitle>
+            <CardDescription>Survolez vos créneaux pour accéder aux détails et ouvrir les actions de suivi.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoading && <CalendarSkeleton />}
+
+            {error && (
+              <EmptyState className="rounded-2xl border border-rose-200/80 bg-rose-50/70 py-12">
+                <p className="text-sm font-semibold text-rose-600">Erreur : {error.message}</p>
+                <p className="mt-1 text-xs text-rose-500">Veuillez actualiser la page ou réessayer plus tard.</p>
+              </EmptyState>
+            )}
+
+            {!isLoading && !error && (
+              <div className="grid grid-cols-7 gap-3">
+                {dayNames.map((day) => (
+                  <div
+                    key={day}
+                    className="text-center text-xs font-semibold uppercase tracking-[0.3em] text-slate-400"
+                  >
+                    {day}
+                  </div>
+                ))}
+
+                {monthDays.map((day) => {
+                  const iso = day.date.toISOString().split("T")[0];
+                  const dayEvents = eventsByDate.get(iso) ?? [];
+                  const isToday = day.isToday;
+
+                  return (
+                    <div
+                      key={iso}
+                      className={`flex min-h-[140px] flex-col gap-2 rounded-3xl border bg-white/75 p-3 transition-all duration-200 ${
+                        day.isCurrentMonth
+                          ? "border-white/70 shadow-sm hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_20px_45px_-28px_rgba(3,105,161,0.5)]"
+                          : "border-transparent bg-white/30 text-slate-400"
+                      } ${isToday ? "ring-2 ring-offset-2 ring-sky-400" : ""}`}
+                    >
+                      <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
+                        <span>{day.date.getDate()}</span>
+                        {dayEvents.length > 0 && (
+                          <span className="rounded-full bg-sky-100/90 px-2 text-xs font-semibold text-sky-600">
+                            {dayEvents.length}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-2 text-xs">
+                        {dayEvents.length === 0 && (
+                          <p className="text-[11px] text-slate-400">Aucun rendez-vous</p>
+                        )}
+
+                        {dayEvents.map((event) => {
+                          const time = new Date(event.heureDebut).toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          });
+
+                          return (
+                            <button
+                              key={event.id}
+                              type="button"
+                              onClick={() => setSelectedEventId(event.id)}
+                              className="group w-full rounded-2xl border border-slate-200/70 bg-white/90 px-2 py-2 text-left text-slate-700 transition hover:border-sky-300 hover:bg-sky-50/80"
+                            >
+                              <p className="font-semibold text-slate-900">{time}</p>
+                              <p className="truncate text-[11px] text-slate-500">{event.patientName}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="flex h-full flex-col">
+          <CardHeader className="flex-col items-start gap-2">
+            <CardTitle className="text-lg text-slate-900">Légende & statut</CardTitle>
+            <CardDescription>Comprenez d’un coup d’œil l’état de vos rendez-vous.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3">
+              {Object.entries(statusBadge).map(([status, { label, variant }]) => (
+                <div
+                  key={status}
+                  className="flex items-center justify-between rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm"
+                >
+                  <span className="font-semibold text-slate-700">{label}</span>
+                  <Badge variant={variant}>{label}</Badge>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-3xl border border-dashed border-sky-200/70 bg-sky-50/70 p-4 text-xs text-sky-700">
+              Astuce : cliquez sur un créneau pour gérer confirmation, annulation ou présence en un geste.
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       {selectedEvent && (
         <Modal
@@ -124,53 +240,41 @@ export default function MedecinCalendarPage() {
           title={`Rendez-vous - ${selectedEvent.patientName}`}
           description="Détails du rendez-vous"
         >
-          <div className="space-y-3 text-sm text-[#475569]">
+          <div className="space-y-3 text-sm text-slate-600">
             <p>
-              <span className="font-semibold text-[#0f172a]">Patient :</span> {selectedEvent.patientName}
+              <span className="font-semibold text-slate-900">Patient :</span> {selectedEvent.patientName}
             </p>
             <p>
-              <span className="font-semibold text-[#0f172a]">Date :</span>{" "}
+              <span className="font-semibold text-slate-900">Date :</span>{" "}
               {formatDate(new Date(selectedEvent.heureDebut), { day: "2-digit", month: "long", year: "numeric" })} à{" "}
               {new Date(selectedEvent.heureDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </p>
             <p>
-              <span className="font-semibold text-[#0f172a]">Durée :</span>{" "}
-              {Math.round((new Date(selectedEvent.heureFin).getTime() - new Date(selectedEvent.heureDebut).getTime()) / 60000)} minutes
+              <span className="font-semibold text-slate-900">Durée :</span>{" "}
+              {Math.round(
+                (new Date(selectedEvent.heureFin).getTime() - new Date(selectedEvent.heureDebut).getTime()) / 60000,
+              )} minutes
             </p>
             {selectedEvent.motif && (
               <p>
-                <span className="font-semibold text-[#0f172a]">Motif :</span> {selectedEvent.motif}
+                <span className="font-semibold text-slate-900">Motif :</span> {selectedEvent.motif}
               </p>
             )}
-            <p>
-              <span className="font-semibold text-[#0f172a]">Statut :</span>{" "}
-              <Badge
-                variant={
-                  selectedEvent.statut === "ANNULE"
-                    ? "danger"
-                    : selectedEvent.statut === "PLANIFIE"
-                    ? "warning"
-                    : "success"
-                }
-              >
-                {selectedEvent.statut === "PLANIFIE" && "Planifié"}
-                {selectedEvent.statut === "CONFIRME" && "Confirmé"}
-                {selectedEvent.statut === "ANNULE" && "Annulé"}
-                {selectedEvent.statut === "HONORE" && "Honoré"}
-                {selectedEvent.statut === "ABSENT" && "Absent"}
-              </Badge>
+            <p className="flex items-center gap-2">
+              <span className="font-semibold text-slate-900">Statut :</span>
+              <Badge variant={statusBadge[selectedEvent.statut].variant}>{statusBadge[selectedEvent.statut].label}</Badge>
             </p>
             {selectedEvent.notes && (
               <p>
-                <span className="font-semibold text-[#0f172a]">Notes :</span> {selectedEvent.notes}
+                <span className="font-semibold text-slate-900">Notes :</span> {selectedEvent.notes}
               </p>
             )}
-            <p className="text-xs text-[#94a3b8]">
-              Pensez à ajouter vos notes de consultation dans l&apos;espace dossier patient après la visite.
+            <p className="text-xs text-slate-400">
+              Pensez à ajouter vos notes de consultation dans l’espace dossier patient après la visite.
             </p>
           </div>
-          
-          <div className="mt-6 flex gap-3">
+
+          <div className="mt-6 flex flex-wrap gap-3">
             {selectedEvent.statut === "PLANIFIE" && (
               <>
                 <Button
@@ -196,7 +300,7 @@ export default function MedecinCalendarPage() {
                 <Button
                   variant="danger"
                   onClick={async () => {
-                    const motif = prompt("Motif d'annulation (optionnel):");
+                    const motif = prompt("Motif d’annulation (optionnel):");
                     if (motif !== null) {
                       setIsUpdating(true);
                       try {
@@ -204,7 +308,7 @@ export default function MedecinCalendarPage() {
                         await reload();
                         setSelectedEventId(null);
                       } catch {
-                        alert("Erreur lors de l'annulation");
+                        alert("Erreur lors de l’annulation");
                       } finally {
                         setIsUpdating(false);
                       }
@@ -216,7 +320,7 @@ export default function MedecinCalendarPage() {
                 </Button>
               </>
             )}
-            
+
             {selectedEvent.statut === "CONFIRME" && (
               <>
                 <Button
@@ -259,9 +363,11 @@ export default function MedecinCalendarPage() {
                 </Button>
               </>
             )}
-            
-            {(selectedEvent.statut === "ANNULE" || selectedEvent.statut === "HONORE" || selectedEvent.statut === "ABSENT") && (
-              <p className="text-sm text-[#64748b]">
+
+            {(selectedEvent.statut === "ANNULE" ||
+              selectedEvent.statut === "HONORE" ||
+              selectedEvent.statut === "ABSENT") && (
+              <p className="text-sm text-slate-500">
                 Ce rendez-vous est terminé ou annulé. Aucune action disponible.
               </p>
             )}

@@ -13,20 +13,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
-const baseStyles =
-  "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+const baseStyles = cn(
+  "inline-flex items-center justify-center gap-2 rounded-2xl font-semibold tracking-wide transition-all duration-200",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400",
+  "disabled:pointer-events-none disabled:opacity-60",
+);
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-[#2563eb] text-white hover:bg-[#1d4ed8] focus-visible:outline-[#2563eb]",
-  secondary: "bg-white text-[#1f2937] border border-[#d1d5db] hover:bg-[#f3f4f6] focus-visible:outline-[#1f2937]",
-  ghost: "bg-transparent text-[#2563eb] hover:bg-[#eff6ff] focus-visible:outline-[#2563eb]",
-  danger: "bg-[#ef4444] text-white hover:bg-[#dc2626] focus-visible:outline-[#ef4444]",
+  primary:
+    "bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 text-white shadow-[0_18px_45px_-22px_rgba(14,116,144,0.8)] hover:shadow-[0_20px_45px_-18px_rgba(37,99,235,0.45)] active:scale-[0.98]",
+  secondary:
+    "border border-slate-200/80 bg-white/80 text-slate-700 shadow-sm shadow-slate-900/5 hover:border-slate-300 hover:bg-white",
+  ghost:
+    "bg-transparent text-sky-600 hover:bg-sky-50/80 hover:text-sky-700",
+  danger:
+    "bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-[0_18px_40px_-20px_rgba(225,29,72,0.75)] hover:shadow-[0_22px_48px_-18px_rgba(225,29,72,0.55)]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "h-9 px-4 text-sm",
-  md: "h-11 px-5 text-sm",
-  lg: "h-12 px-6 text-base",
+  sm: "min-h-[36px] px-4 text-xs",
+  md: "min-h-[44px] px-5 text-sm",
+  lg: "min-h-[50px] px-6 text-base",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -36,10 +43,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
         disabled={disabled || loading}
+        aria-busy={loading}
+        data-loading={loading ? "true" : undefined}
         {...props}
       >
         {loading && (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent" />
+          <span
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+            aria-hidden
+          />
         )}
         {children}
       </button>

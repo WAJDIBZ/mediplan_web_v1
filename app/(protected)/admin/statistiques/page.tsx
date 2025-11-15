@@ -3,9 +3,9 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AdminStatsCards } from "@/features/admin/stats/components/admin-stats-cards";
 import { AdminTrendsChart } from "@/features/admin/stats/components/admin-trends-chart";
 import { useAdminStats } from "@/features/admin/stats/use-admin-stats";
@@ -106,16 +106,25 @@ export default function AdminStatisticsPage() {
   }, [data]);
 
   return (
-    <div className="space-y-8">
-      <Card className="border-[#dbeafe] bg-[#f8fafc]">
-        <CardHeader className="lg:flex lg:items-center lg:justify-between">
-          <div>
-            <CardTitle className="text-xl">Statistiques avancées</CardTitle>
-            <CardDescription>
-              Analysez les indicateurs clés de votre établissement et exportez les données pour vos rapports.
-            </CardDescription>
+    <div className="space-y-10">
+      <section className="relative overflow-hidden rounded-[32px] border border-[#c7d2fe]/80 bg-gradient-to-br from-[#eef2ff] via-white to-[#f9fafb] p-8 shadow-inner">
+        <div className="absolute inset-0 opacity-60" aria-hidden>
+          <div className="absolute left-4 top-6 h-24 w-24 rounded-full bg-indigo-300/40 blur-3xl" />
+          <div className="absolute bottom-0 right-8 h-32 w-32 rounded-full bg-sky-200/40 blur-3xl" />
+        </div>
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-4">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-[#4338ca]">
+              📈 Intelligence opérationnelle
+            </span>
+            <div>
+              <h1 className="text-3xl font-semibold text-[#1e1b4b]">Statistiques avancées</h1>
+              <p className="mt-3 max-w-2xl text-sm text-[#312e81]/80">
+                Analysez vos tendances clés, mesurez l’engagement patient/médecin et exportez un reporting prêt pour vos comités de pilotage.
+              </p>
+            </div>
           </div>
-          <div className="mt-4 flex gap-3 lg:mt-0">
+          <div className="flex flex-wrap gap-3">
             <Button variant="secondary" onClick={() => reload()} disabled={isLoading}>
               Actualiser
             </Button>
@@ -123,12 +132,12 @@ export default function AdminStatisticsPage() {
               {isExporting ? "Export en cours..." : "Exporter en CSV"}
             </Button>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </section>
 
       <form
         onSubmit={handleSubmit}
-        className="grid gap-4 rounded-3xl border border-[#e2e8f0] bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4"
+        className="grid gap-4 rounded-[28px] border border-[#e0e7ff] bg-white/95 p-6 shadow-lg shadow-indigo-950/5 sm:grid-cols-2 lg:grid-cols-4"
       >
         <div>
           <Label htmlFor="from">Du</Label>
@@ -160,16 +169,24 @@ export default function AdminStatisticsPage() {
       </form>
 
       {isLoading && (
-        <EmptyState className="py-20">
-          <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2563eb]/10 text-[#2563eb]">
-            📈
-          </span>
-          <p className="text-sm font-medium text-[#2563eb]">Chargement des statistiques détaillées...</p>
-        </EmptyState>
+        <div className="rounded-[28px] border border-[#e0e7ff] bg-[#eef2ff]/60 p-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-[#4338ca]">Chargement</p>
+              <p className="text-xs text-[#4338ca]/80">Récupération des métriques consolidées...</p>
+            </div>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#4338ca]">⏳</span>
+          </div>
+          <div className="mt-6 grid gap-3">
+            {[...Array(3)].map((_, index) => (
+              <Skeleton key={`stats-skeleton-${index}`} className="h-16 w-full rounded-2xl bg-white/80" />
+            ))}
+          </div>
+        </div>
       )}
 
       {error && !isLoading && (
-        <div className="rounded-3xl border border-[#fecaca] bg-[#fef2f2] p-6 text-sm text-[#991b1b]">
+        <div className="rounded-[28px] border border-[#fecaca] bg-[#fef2f2] p-6 text-sm text-[#991b1b]">
           {error instanceof ApiError
             ? error.message
             : "Impossible de charger les statistiques avancées pour le moment."}
