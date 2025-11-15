@@ -24,6 +24,7 @@ export function DoctorSidebarLayout({ children }: DoctorSidebarProps) {
           <SidebarLink href="/medecin/horaires" label="Mes horaires" icon="⏰" />
           <SidebarLink href="/medecin/patients" label="Patients" icon="👤" />
           <SidebarLink href="/medecin/ordonnances" label="Ordonnances" icon="💊" />
+          <SidebarLink href="/medecin/statistiques" label="Statistiques" icon="📊" />
         </nav>
         <div className="mt-auto rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#2563eb] p-5 text-white shadow-xl">
           <h3 className="text-lg font-semibold">Astuces de productivité</h3>

@@ -14,9 +14,9 @@ export interface CreneauHoraire {
 export interface Disponibilite {
     id: string;
     medecinId: string;
-    date: string; // ISO DateTime string (full timestamp)
-    heureDebut: string; // ISO DateTime string (full timestamp)
-    heureFin: string; // ISO DateTime string (full timestamp)
+    date: string; // LocalDate "YYYY-MM-DD" ou ISO timestamp (selon le backend)
+    heureDebut: string; // LocalTime "HH:mm" ou ISO timestamp (selon le backend)
+    heureFin: string; // LocalTime "HH:mm" ou ISO timestamp (selon le backend)
     actif: boolean;
     recurrence: RecurrenceType;
     commentaire?: string;
@@ -35,9 +35,10 @@ export interface DisponibiliteListItem {
 }
 
 export interface CreateDisponibilitePayload {
-    date: string; // ISO DateTime string (full timestamp like "2025-11-17T00:00:00.000Z")
-    heureDebut: string; // ISO DateTime string (full timestamp like "2025-11-17T08:00:00.000Z")
-    heureFin: string; // ISO DateTime string (full timestamp like "2025-11-17T16:00:00.000Z")
+    medecinId?: string; // Ajouté automatiquement par l'API depuis le JWT
+    date: string; // LocalDate format "YYYY-MM-DD" (ex: "2025-11-17")
+    heureDebut: string; // LocalTime format "HH:mm" (ex: "08:00")
+    heureFin: string; // LocalTime format "HH:mm" (ex: "16:00")
     recurrence?: RecurrenceType;
     commentaire?: string;
     actif?: boolean;

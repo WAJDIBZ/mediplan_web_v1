@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api-client";
+import { getTokens } from "@/lib/token-storage";
 import type {
     CreateDisponibilitePayload,
     Disponibilite,
@@ -7,11 +8,56 @@ import type {
     UpdateDisponibilitePayload,
 } from "./types";
 
-// Récupérer l'ID du médecin connecté
+// Formater une date en LocalDate (YYYY-MM-DD) pour le backend Spring Boot
+export function formatDateLocal(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getDate()}`.padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+// Formater une date en LocalTime (HH:mm) pour le backend Spring Boot
+export function formatTimeLocal(date: Date): string {
+    const hours = `${date.getHours()}`.padStart(2, "0");
+    const minutes = `${date.getMinutes()}`.padStart(2, "0");
+    return `${hours}:${minutes}`;
+}
+
+// Décoder le JWT pour extraire l'ID utilisateur
+function decodeJwt(token: string): { sub?: string; userId?: string; id?: string } {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Erreur décodage JWT:', error);
+        return {};
+    }
+}
+
+// Récupérer l'ID du médecin connecté depuis le JWT
 async function getCurrentMedecinId(): Promise<string> {
-    // TODO: Récupérer depuis le contexte auth ou token JWT
-    // Pour l'instant, on utilisera "me" qui sera résolu côté backend
-    return "me";
+    const tokens = getTokens();
+    if (!tokens?.accessToken) {
+        throw new Error('Token non disponible');
+    }
+
+    const decoded = decodeJwt(tokens.accessToken);
+    // Le JWT peut contenir l'ID dans 'sub', 'userId', ou 'id'
+    const userId = decoded.sub || decoded.userId || decoded.id;
+
+    if (!userId) {
+        // Si pas d'ID dans le token, utiliser "me" et laisser le backend gérer
+        return "me";
+    }
+
+    return userId;
 }
 
 export async function fetchDisponibilites(
@@ -58,26 +104,20 @@ export async function createDisponibilite(
     payload: CreateDisponibilitePayload,
 ): Promise<Disponibilite> {
     const medecinId = await getCurrentMedecinId();
-    console.log("API createDisponibilite - medecinId:", medecinId);
-    console.log("API createDisponibilite - payload:", JSON.stringify(payload, null, 2));
     const url = `/api/medecins/${medecinId}/disponibilites`;
-    console.log("API createDisponibilite - URL:", url);
 
-    try {
-        const result = await apiFetch<Disponibilite>(url, {
-            method: "POST",
-            body: payload,
-            authenticated: true,
-        });
-        console.log("API createDisponibilite - Succès:", result);
-        return result;
-    } catch (error) {
-        console.error("API createDisponibilite - Erreur:", error);
-        throw error;
-    }
-}
+    // Le backend exige medecinId dans le body
+    const bodyWithMedecinId = {
+        ...payload,
+        medecinId,
+    };
 
-export async function updateDisponibilite(
+    return apiFetch<Disponibilite>(url, {
+        method: "POST",
+        body: bodyWithMedecinId,
+        authenticated: true,
+    });
+} export async function updateDisponibilite(
     id: string,
     payload: UpdateDisponibilitePayload,
 ): Promise<Disponibilite> {

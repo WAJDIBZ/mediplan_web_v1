@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { buildMonthDays, formatDate } from "@/lib/date";
 import { useCalendrierRendezVous } from "@/features/medecin/calendrier/use-calendrier";
+import { confirmerRendezVous, annulerRendezVous, marquerHonore, marquerAbsent } from "@/features/medecin/calendrier/rdv-api";
 
 export default function MedecinCalendarPage() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const { events, isLoading, error } = useCalendrierRendezVous(currentDate.getFullYear(), currentDate.getMonth());
+  const { events, isLoading, error, reload } = useCalendrierRendezVous(currentDate.getFullYear(), currentDate.getMonth());
 
   const monthDays = useMemo(() => buildMonthDays(currentDate.getFullYear(), currentDate.getMonth()), [currentDate]);
 
@@ -164,8 +166,105 @@ export default function MedecinCalendarPage() {
               </p>
             )}
             <p className="text-xs text-[#94a3b8]">
-              Pensez à ajouter vos notes de consultation dans l'espace dossier patient après la visite.
+              Pensez à ajouter vos notes de consultation dans l&apos;espace dossier patient après la visite.
             </p>
+          </div>
+          
+          <div className="mt-6 flex gap-3">
+            {selectedEvent.statut === "PLANIFIE" && (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={async () => {
+                    if (confirm("Confirmer ce rendez-vous ?")) {
+                      setIsUpdating(true);
+                      try {
+                        await confirmerRendezVous(selectedEvent.id);
+                        await reload();
+                        setSelectedEventId(null);
+                      } catch {
+                        alert("Erreur lors de la confirmation");
+                      } finally {
+                        setIsUpdating(false);
+                      }
+                    }
+                  }}
+                  disabled={isUpdating}
+                >
+                  ✓ Confirmer
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    const motif = prompt("Motif d'annulation (optionnel):");
+                    if (motif !== null) {
+                      setIsUpdating(true);
+                      try {
+                        await annulerRendezVous(selectedEvent.id, motif || undefined);
+                        await reload();
+                        setSelectedEventId(null);
+                      } catch {
+                        alert("Erreur lors de l'annulation");
+                      } finally {
+                        setIsUpdating(false);
+                      }
+                    }
+                  }}
+                  disabled={isUpdating}
+                >
+                  ✕ Annuler
+                </Button>
+              </>
+            )}
+            
+            {selectedEvent.statut === "CONFIRME" && (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={async () => {
+                    setIsUpdating(true);
+                    try {
+                      await marquerHonore(selectedEvent.id);
+                      await reload();
+                      setSelectedEventId(null);
+                    } catch {
+                      alert("Erreur lors de la mise à jour");
+                    } finally {
+                      setIsUpdating(false);
+                    }
+                  }}
+                  disabled={isUpdating}
+                >
+                  ✓ Patient présent
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    if (confirm("Marquer le patient comme absent ?")) {
+                      setIsUpdating(true);
+                      try {
+                        await marquerAbsent(selectedEvent.id);
+                        await reload();
+                        setSelectedEventId(null);
+                      } catch {
+                        alert("Erreur lors de la mise à jour");
+                      } finally {
+                        setIsUpdating(false);
+                      }
+                    }
+                  }}
+                  disabled={isUpdating}
+                >
+                  ✕ Absent
+                </Button>
+              </>
+            )}
+            
+            {(selectedEvent.statut === "ANNULE" || selectedEvent.statut === "HONORE" || selectedEvent.statut === "ABSENT") && (
+              <p className="text-sm text-[#64748b]">
+                Ce rendez-vous est terminé ou annulé. Aucune action disponible.
+              </p>
+            )}
           </div>
         </Modal>
       )}

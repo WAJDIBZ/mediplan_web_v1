@@ -11,53 +11,69 @@ export interface PatientListItem {
 }
 
 export async function fetchMesPatients(): Promise<PatientListItem[]> {
-    // Récupérer toutes les consultations du médecin
-    const consultationsResponse = await apiFetch<{
-        content: Array<{
-            id: string;
-            patientId: string;
-            date: string;
-            patient?: {
+    try {
+        // Récupérer les RDV du médecin qui contiennent les infos patient
+        const rdvResponse = await apiFetch<{
+            content: Array<{
                 id: string;
-                fullName: string;
-                email: string;
-                phone?: string;
-                dateOfBirth?: string;
-            };
-        }>;
-    }>("/api/consultations", { authenticated: true });
+                patientId: string;
+                patient: {
+                    id: string;
+                    fullName: string;
+                    email: string;
+                    phone: string;
+                };
+                debut: string;
+                statut: string;
+            }>;
+        }>("/api/rdv", { authenticated: true });
 
-    // Regrouper par patient
-    const patientsMap = new Map<string, PatientListItem>();
+        console.log("📥 RDV reçus:", rdvResponse);
 
-    consultationsResponse.content.forEach((consultation) => {
-        if (consultation.patient) {
-            const existing = patientsMap.get(consultation.patientId);
+        const rdvList = rdvResponse.content || [];
+
+        if (rdvList.length === 0) {
+            return [];
+        }
+
+        // Regrouper par patient
+        const patientsMap = new Map<string, PatientListItem>();
+
+        rdvList.forEach((rdv) => {
+            const existing = patientsMap.get(rdv.patientId);
+
+            // Utiliser le fullName de l'objet patient
+            const fullName = rdv.patient?.fullName || `Patient ${rdv.patientId.substring(0, 8)}`;
 
             if (existing) {
-                existing.totalConsultations++;
-                const consultationDate = new Date(consultation.date);
+                // Compter seulement les RDV honorés comme consultations
+                if (rdv.statut === "HONORE") {
+                    existing.totalConsultations++;
+                }
+                const rdvDate = new Date(rdv.debut);
                 const lastDate = new Date(existing.lastConsultation || 0);
-                if (consultationDate > lastDate) {
-                    existing.lastConsultation = consultation.date;
+                if (rdvDate > lastDate) {
+                    existing.lastConsultation = rdv.debut;
                 }
             } else {
-                patientsMap.set(consultation.patientId, {
-                    id: consultation.patient.id,
-                    fullName: consultation.patient.fullName,
-                    email: consultation.patient.email,
-                    phone: consultation.patient.phone,
-                    dateOfBirth: consultation.patient.dateOfBirth,
-                    lastConsultation: consultation.date,
-                    totalConsultations: 1,
+                patientsMap.set(rdv.patientId, {
+                    id: rdv.patientId,
+                    fullName,
+                    email: rdv.patient?.email || "",
+                    phone: rdv.patient?.phone,
+                    lastConsultation: rdv.debut,
+                    totalConsultations: rdv.statut === "HONORE" ? 1 : 0,
                 });
             }
-        }
-    });
+        });
 
-    return Array.from(patientsMap.values()).sort((a, b) => {
-        const dateA = new Date(a.lastConsultation || 0);
-        const dateB = new Date(b.lastConsultation || 0);
-        return dateB.getTime() - dateA.getTime();
-    });
+        return Array.from(patientsMap.values()).sort((a, b) => {
+            const dateA = new Date(a.lastConsultation || 0);
+            const dateB = new Date(b.lastConsultation || 0);
+            return dateB.getTime() - dateA.getTime();
+        });
+    } catch (error) {
+        console.error("Erreur récupération patients:", error);
+        return [];
+    }
 }
