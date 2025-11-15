@@ -42,7 +42,10 @@ interface FullCalendarViewProps {
   onEventClick?: (eventId: string) => void;
 }
 
-export function FullCalendarView({ events, onEventClick }: FullCalendarViewProps) {
+export function FullCalendarView({
+  events,
+  onEventClick,
+}: FullCalendarViewProps) {
   const calendarRef = useRef<FullCalendar>(null);
 
   return (
@@ -106,7 +109,12 @@ import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { formatDate } from "@/lib/date";
 import { useCalendrierRendezVous } from "@/features/medecin/calendrier/use-calendrier";
-import { confirmerRendezVous, annulerRendezVous, marquerHonore, marquerAbsent } from "@/features/medecin/calendrier/rdv-api";
+import {
+  confirmerRendezVous,
+  annulerRendezVous,
+  marquerHonore,
+  marquerAbsent,
+} from "@/features/medecin/calendrier/rdv-api";
 import { FullCalendarView } from "@/features/medecin/calendrier/components/full-calendar-view";
 
 export default function MedecinCalendarPage() {
@@ -153,7 +161,9 @@ export default function MedecinCalendarPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-[#0f172a]">Calendrier des rendez-vous</h1>
+        <h1 className="text-2xl font-semibold text-[#0f172a]">
+          Calendrier des rendez-vous
+        </h1>
         <p className="text-sm text-[#64748b]">
           Visualisez vos consultations planifiées avec un calendrier interactif
         </p>
@@ -259,6 +269,7 @@ Le nouveau calendrier FullCalendar offre:
 ## 📝 Note
 
 Cette intégration nécessite que le backend supporte:
+
 - `PATCH /api/rdv/{id}` pour modifier les RDV
 - Les champs `debut` et `fin` au format ISO 8601
 

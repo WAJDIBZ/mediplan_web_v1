@@ -110,9 +110,9 @@ export async function createPrescription(data: CreatePrescriptionData): Promise<
         ...data,
         medecinId,
     };
-    
+
     console.log("📤 Données envoyées pour création prescription:", payload);
-    
+
     const response = await apiFetch<{
         id: string;
         patientId: string;
