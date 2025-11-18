@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { CalendarIcon, ClockIcon } from "@/components/icons/mediplan-icons";
+import { useToast } from "@/components/feedback/toast-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildMonthDays, formatDate } from "@/lib/date";
+import { ApiError } from "@/lib/errors";
 import { useCalendrierRendezVous } from "@/features/medecin/calendrier/use-calendrier";
 import {
   confirmerRendezVous,
@@ -57,6 +59,7 @@ export default function MedecinCalendarPage() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const { notify } = useToast();
 
   const { events, isLoading, error, reload } = useCalendrierRendezVous(
     currentDate.getFullYear(),
@@ -80,6 +83,17 @@ export default function MedecinCalendarPage() {
   }, [events]);
 
   const selectedEvent = events.find((event) => event.id === selectedEventId);
+
+  const handleActionError = (title: string, error: unknown) => {
+    console.error(title, error);
+    const description =
+      error instanceof ApiError ? error.message : "Une erreur inattendue est survenue. Veuillez réessayer.";
+    notify({ variant: "error", title, description });
+  };
+
+  const handleActionSuccess = (title: string, description?: string) => {
+    notify({ variant: "success", title, description });
+  };
 
   const handleNavigate = (offset: number) => {
     setCurrentDate((previous) => new Date(previous.getFullYear(), previous.getMonth() + offset, 1));
@@ -286,8 +300,9 @@ export default function MedecinCalendarPage() {
                         await confirmerRendezVous(selectedEvent.id);
                         await reload();
                         setSelectedEventId(null);
-                      } catch {
-                        alert("Erreur lors de la confirmation");
+                        handleActionSuccess("Rendez-vous confirmé", "Le patient a été informé.");
+                      } catch (error) {
+                        handleActionError("Impossible de confirmer le rendez-vous", error);
                       } finally {
                         setIsUpdating(false);
                       }
@@ -307,8 +322,9 @@ export default function MedecinCalendarPage() {
                         await annulerRendezVous(selectedEvent.id, motif || undefined);
                         await reload();
                         setSelectedEventId(null);
-                      } catch {
-                        alert("Erreur lors de l’annulation");
+                        handleActionSuccess("Rendez-vous annulé", "Le créneau est libéré.");
+                      } catch (error) {
+                        handleActionError("Impossible d'annuler le rendez-vous", error);
                       } finally {
                         setIsUpdating(false);
                       }
@@ -331,8 +347,9 @@ export default function MedecinCalendarPage() {
                       await marquerHonore(selectedEvent.id);
                       await reload();
                       setSelectedEventId(null);
-                    } catch {
-                      alert("Erreur lors de la mise à jour");
+                      handleActionSuccess("Patient présent", "Le rendez-vous est noté honoré.");
+                    } catch (error) {
+                      handleActionError("Impossible de marquer le rendez-vous comme honoré", error);
                     } finally {
                       setIsUpdating(false);
                     }
@@ -350,8 +367,9 @@ export default function MedecinCalendarPage() {
                         await marquerAbsent(selectedEvent.id);
                         await reload();
                         setSelectedEventId(null);
-                      } catch {
-                        alert("Erreur lors de la mise à jour");
+                        handleActionSuccess("Patient absent", "Statut mis à jour en ABSENT.");
+                      } catch (error) {
+                        handleActionError("Impossible de marquer le patient absent", error);
                       } finally {
                         setIsUpdating(false);
                       }

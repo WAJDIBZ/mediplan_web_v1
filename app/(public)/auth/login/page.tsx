@@ -112,7 +112,7 @@ export default function LoginPage() {
             <span aria-hidden>←</span> Retour accueil
           </Link>
         </div>
-      </div>
+      </div>   
       <div className="relative z-10 w-full max-w-6xl">
         <div className="grid gap-8 rounded-[40px] border border-white/10 bg-white/5 p-4 shadow-[0_60px_140px_-60px_rgba(2,6,23,0.9)] backdrop-blur-2xl lg:grid-cols-2 lg:p-6">
           <motion.section
@@ -207,7 +207,7 @@ export default function LoginPage() {
                     Mot de passe oublié ?
                   </Link>
                 </div>
-                <div className="relative">
+                <div className="relative">               
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}

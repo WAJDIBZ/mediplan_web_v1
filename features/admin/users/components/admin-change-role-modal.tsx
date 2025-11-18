@@ -24,6 +24,7 @@ const changeRoleSchema = createSchema({
   clinicName: stringField({ label: "Cabinet" }),
 });
 
+
 export function AdminChangeRoleModal({ open, onClose, user, onSubmit }: AdminChangeRoleModalProps) {
   const [serverError, setServerError] = useState<string | null>(null);
   const { register, handleSubmit, formState, reset, setValue } = useForm({
