@@ -26,16 +26,16 @@ export async function fetchRendezVousByMonth(year: number, month: number): Promi
     }>(`/api/rdv?from=${firstDay.toISOString()}&to=${lastDay.toISOString()}`, { authenticated: true });
 
     return response.content.map((rdv) => {
-        // Parse debut as local date to avoid timezone offset issues
-        const debutDate = new Date(rdv.debut);
-        const localDate = `${debutDate.getFullYear()}-${String(debutDate.getMonth() + 1).padStart(2, "0")}-${String(debutDate.getDate()).padStart(2, "0")}`;
+        // Extract date directly from ISO string to avoid timezone shifts
+        // rdv.debut is like "2025-11-21T14:30:00Z" or "2025-11-21T14:30:00"
+        const dateOnly = rdv.debut.split("T")[0]; // Get YYYY-MM-DD
 
         return {
             id: rdv.id,
             patientId: rdv.patientId,
             patientName: rdv.patient?.fullName || "Patient inconnu",
             medecinId: rdv.medecinId,
-            date: localDate +1, // Format YYYY-MM-DD using local date
+            date: dateOnly, // Format YYYY-MM-DD directly from backend
             heureDebut: rdv.debut,
             heureFin: rdv.fin,
             statut: rdv.statut as "PLANIFIE" | "CONFIRME" | "ANNULE" | "HONORE" | "ABSENT",

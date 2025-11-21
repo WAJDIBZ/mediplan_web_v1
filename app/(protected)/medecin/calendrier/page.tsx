@@ -62,6 +62,7 @@ export default function MedecinCalendarPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [consultationModalOpen, setConsultationModalOpen] = useState(false);
   const [consultationRdvData, setConsultationRdvData] = useState<{ id: string; patientId: string; patientName: string } | null>(null);
+  const [expandedDayDate, setExpandedDayDate] = useState<string | null>(null);
   const { notify } = useToast();
 
   const { events, isLoading, error, reload } = useCalendrierRendezVous(
@@ -206,24 +207,46 @@ export default function MedecinCalendarPage() {
                           <p className="text-[11px] text-slate-400">Aucun rendez-vous</p>
                         )}
 
-                        {dayEvents.map((event) => {
-                          const time = new Date(event.heureDebut).toLocaleTimeString("fr-FR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          });
+                        {dayEvents.length > 0 && (
+                          <>
+                            {(expandedDayDate === iso ? dayEvents : dayEvents.slice(0, 2)).map((event) => {
+                              const time = new Date(event.heureDebut).toLocaleTimeString("fr-FR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              });
 
-                          return (
-                            <button
-                              key={event.id}
-                              type="button"
-                              onClick={() => setSelectedEventId(event.id)}
-                              className="group w-full rounded-2xl border border-slate-200/70 bg-white/90 px-2 py-2 text-left text-slate-700 transition hover:border-sky-300 hover:bg-sky-50/80"
-                            >
-                              <p className="font-semibold text-slate-900">{time}</p>
-                              <p className="truncate text-[11px] text-slate-500">{event.patientName}</p>
-                            </button>
-                          );
-                        })}
+                              return (
+                                <button
+                                  key={event.id}
+                                  type="button"
+                                  onClick={() => setSelectedEventId(event.id)}
+                                  className="group w-full rounded-2xl border border-slate-200/70 bg-white/90 px-2 py-2 text-left text-slate-700 transition hover:border-sky-300 hover:bg-sky-50/80"
+                                >
+                                  <p className="font-semibold text-slate-900">{time}</p>
+                                  <p className="truncate text-[11px] text-slate-500">{event.patientName}</p>
+                                </button>
+                              );
+                            })}
+                            {dayEvents.length > 2 && expandedDayDate !== iso && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedDayDate(iso)}
+                                className="w-full rounded-2xl border border-sky-200/70 bg-sky-50/80 px-2 py-1.5 text-center text-[11px] font-semibold text-sky-600 transition hover:bg-sky-100/80"
+                              >
+                                Voir tout ({dayEvents.length})
+                              </button>
+                            )}
+                            {expandedDayDate === iso && dayEvents.length > 2 && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedDayDate(null)}
+                                className="w-full rounded-2xl border border-slate-200/70 bg-slate-50/80 px-2 py-1.5 text-center text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100/80"
+                              >
+                                Réduire
+                              </button>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   );
