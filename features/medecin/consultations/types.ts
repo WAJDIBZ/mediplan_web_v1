@@ -5,7 +5,7 @@ export interface CreateConsultationPayload {
     resume: string;
     diagnostic: string;
     planSuivi: string;
-    recommandations: string;
+    recommandations: string[];
 }
 
 export interface Consultation {

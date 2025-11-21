@@ -62,7 +62,7 @@ export default function MedecinCalendarPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [consultationModalOpen, setConsultationModalOpen] = useState(false);
   const [consultationRdvData, setConsultationRdvData] = useState<{ id: string; patientId: string; patientName: string } | null>(null);
-  const [expandedDayDate, setExpandedDayDate] = useState<string | null>(null);
+  const [dayRdvsModal, setDayRdvsModal] = useState<{ date: string; events: typeof events } | null>(null);
   const { notify } = useToast();
 
   const { events, isLoading, error, reload } = useCalendrierRendezVous(
@@ -210,7 +210,7 @@ export default function MedecinCalendarPage() {
 
                         {dayEvents.length > 0 && (
                           <>
-                            {(expandedDayDate === iso ? dayEvents : dayEvents.slice(0, 2)).map((event) => {
+                            {dayEvents.slice(0, 2).map((event) => {
                               const time = new Date(event.heureDebut).toLocaleTimeString("fr-FR", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -228,22 +228,13 @@ export default function MedecinCalendarPage() {
                                 </button>
                               );
                             })}
-                            {dayEvents.length > 2 && expandedDayDate !== iso && (
+                            {dayEvents.length > 2 && (
                               <button
                                 type="button"
-                                onClick={() => setExpandedDayDate(iso)}
+                                onClick={() => setDayRdvsModal({ date: iso, events: dayEvents })}
                                 className="w-full rounded-2xl border border-sky-200/70 bg-sky-50/80 px-2 py-1.5 text-center text-[11px] font-semibold text-sky-600 transition hover:bg-sky-100/80"
                               >
                                 Voir tout ({dayEvents.length})
-                              </button>
-                            )}
-                            {expandedDayDate === iso && dayEvents.length > 2 && (
-                              <button
-                                type="button"
-                                onClick={() => setExpandedDayDate(null)}
-                                className="w-full rounded-2xl border border-slate-200/70 bg-slate-50/80 px-2 py-1.5 text-center text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100/80"
-                              >
-                                Réduire
                               </button>
                             )}
                           </>
@@ -462,6 +453,58 @@ export default function MedecinCalendarPage() {
             handleActionError("Impossible de créer la consultation", error);
           }}
         />
+      )}
+
+      {dayRdvsModal && (
+        <Modal
+          open={true}
+          onClose={() => setDayRdvsModal(null)}
+          title={`Rendez-vous du ${new Date(dayRdvsModal.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`}
+        >
+          <div className="space-y-3">
+            {dayRdvsModal.events.map((event) => {
+              const time = new Date(event.heureDebut).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+
+              const statusColors: Record<string, string> = {
+                CONFIRME: "bg-blue-100 text-blue-700",
+                EN_ATTENTE: "bg-amber-100 text-amber-700",
+                HONORE: "bg-green-100 text-green-700",
+                ABSENT: "bg-red-100 text-red-700",
+                ANNULE: "bg-gray-100 text-gray-700",
+              };
+
+              return (
+                <button
+                  key={event.id}
+                  type="button"
+                  onClick={() => {
+                    setDayRdvsModal(null);
+                    setSelectedEventId(event.id);
+                  }}
+                  className="w-full rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-sky-300 hover:bg-sky-50/50"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-900">{time}</p>
+                      <p className="text-sm text-slate-600">{event.patientName}</p>
+                      {event.motif && (
+                        <p className="mt-1 text-xs text-slate-500">{event.motif}</p>
+                      )}
+                    </div>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${statusColors[event.statut] || "bg-gray-100 text-gray-700"}`}
+                    >
+                      {event.statut.replace("_", " ")}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Modal>
       )}
     </div>
   );

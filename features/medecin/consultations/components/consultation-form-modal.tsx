@@ -49,7 +49,7 @@ export function ConsultationFormModal({
         resume: formData.resume,
         diagnostic: formData.diagnostic,
         planSuivi: formData.planSuivi,
-        recommandations: formData.recommandations,
+        recommandations: formData.recommandations.split('\n').filter(line => line.trim() !== ''),
       };
 
       await createConsultation(payload);
@@ -72,6 +72,7 @@ export function ConsultationFormModal({
       onClose={onClose}
       title="Créer une consultation"
       description={`Patient : ${patientName}`}
+      size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -126,13 +127,13 @@ export function ConsultationFormModal({
         </div>
 
         <div>
-          <Label htmlFor="recommandations">Recommandations *</Label>
+          <Label htmlFor="recommandations">Recommandations * (une par ligne)</Label>
           <Textarea
             id="recommandations"
             value={formData.recommandations}
             onChange={(e) => handleChange("recommandations", e.target.value)}
-            placeholder="Conseils et recommandations pour le patient..."
-            rows={3}
+            placeholder="Une recommandation par ligne&#10;Ex: Repos pendant 48h&#10;Prendre les médicaments prescrits&#10;Revenir dans 2 semaines"
+            rows={4}
             required
             disabled={isSubmitting}
           />

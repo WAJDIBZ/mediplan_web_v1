@@ -37,7 +37,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-10 backdrop-blur-sm">
       <div
         className={cn(
-          "animate-in-up relative w-full overflow-hidden rounded-[28px] border border-white/60 bg-white/90 p-6 shadow-2xl shadow-slate-900/20 backdrop-blur-xl",
+          "animate-in-up relative w-full max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] border border-white/60 bg-white/90 p-6 shadow-2xl shadow-slate-900/20 backdrop-blur-xl",
           size === "lg" ? "max-w-3xl" : "max-w-xl",
         )}
       >
@@ -56,7 +56,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
           <h2 className="mt-3 text-xl font-semibold text-slate-900">{title}</h2>
           {description && <p className="mt-2 text-sm text-slate-600">{description}</p>}
         </div>
-        <div className="space-y-4 overflow-y-auto pb-4 text-slate-700">{children}</div>
+        <div className="flex-1 space-y-4 overflow-y-auto pb-4 text-slate-700">{children}</div>
         {footer ? (
           <div className="mt-6 flex flex-wrap justify-end gap-3">{footer}</div>
         ) : (
