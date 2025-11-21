@@ -25,17 +25,23 @@ export async function fetchRendezVousByMonth(year: number, month: number): Promi
         }>;
     }>(`/api/rdv?from=${firstDay.toISOString()}&to=${lastDay.toISOString()}`, { authenticated: true });
 
-    return response.content.map((rdv) => ({
-        id: rdv.id,
-        patientId: rdv.patientId,
-        patientName: rdv.patient?.fullName || "Patient inconnu",
-        medecinId: rdv.medecinId,
-        date: rdv.debut.split("T")[0], // Format YYYY-MM-DD
-        heureDebut: rdv.debut,
-        heureFin: rdv.fin,
-        statut: rdv.statut as "PLANIFIE" | "CONFIRME" | "ANNULE" | "HONORE" | "ABSENT",
-        motif: rdv.motif,
-        notes: "",
-        createdAt: rdv.debut,
-    }));
+    return response.content.map((rdv) => {
+        // Parse debut as local date to avoid timezone offset issues
+        const debutDate = new Date(rdv.debut);
+        const localDate = `${debutDate.getFullYear()}-${String(debutDate.getMonth() + 1).padStart(2, "0")}-${String(debutDate.getDate()).padStart(2, "0")}`;
+
+        return {
+            id: rdv.id,
+            patientId: rdv.patientId,
+            patientName: rdv.patient?.fullName || "Patient inconnu",
+            medecinId: rdv.medecinId,
+            date: localDate, // Format YYYY-MM-DD using local date
+            heureDebut: rdv.debut,
+            heureFin: rdv.fin,
+            statut: rdv.statut as "PLANIFIE" | "CONFIRME" | "ANNULE" | "HONORE" | "ABSENT",
+            motif: rdv.motif,
+            notes: "",
+            createdAt: rdv.debut,
+        };
+    });
 }

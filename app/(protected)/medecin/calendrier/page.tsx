@@ -19,6 +19,7 @@ import {
   marquerHonore,
   marquerAbsent,
 } from "@/features/medecin/calendrier/rdv-api";
+import { ConsultationFormModal } from "@/features/medecin/consultations/components/consultation-form-modal";
 
 const dayNames = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] as const;
 
@@ -59,6 +60,8 @@ export default function MedecinCalendarPage() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [consultationModalOpen, setConsultationModalOpen] = useState(false);
+  const [consultationRdvData, setConsultationRdvData] = useState<{ id: string; patientId: string; patientName: string } | null>(null);
   const { notify } = useToast();
 
   const { events, isLoading, error, reload } = useCalendrierRendezVous(
@@ -93,6 +96,14 @@ export default function MedecinCalendarPage() {
 
   const handleActionSuccess = (title: string, description?: string) => {
     notify({ variant: "success", title, description });
+  };
+
+  const canMarkPresenceForEvent = (event: typeof selectedEvent): boolean => {
+    if (!event) return false;
+    const now = new Date();
+    const rdvStart = new Date(event.heureDebut);
+    // Allow marking present/absent only if the RDV start time has passed
+    return now >= rdvStart;
   };
 
   const handleNavigate = (offset: number) => {
@@ -339,46 +350,61 @@ export default function MedecinCalendarPage() {
 
             {selectedEvent.statut === "CONFIRME" && (
               <>
-                <Button
-                  variant="primary"
-                  onClick={async () => {
-                    setIsUpdating(true);
-                    try {
-                      await marquerHonore(selectedEvent.id);
-                      await reload();
-                      setSelectedEventId(null);
-                      handleActionSuccess("Patient présent", "Le rendez-vous est noté honoré.");
-                    } catch (error) {
-                      handleActionError("Impossible de marquer le rendez-vous comme honoré", error);
-                    } finally {
-                      setIsUpdating(false);
-                    }
-                  }}
-                  disabled={isUpdating}
-                >
-                  ✓ Patient présent
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={async () => {
-                    if (confirm("Marquer le patient comme absent ?")) {
-                      setIsUpdating(true);
-                      try {
-                        await marquerAbsent(selectedEvent.id);
-                        await reload();
-                        setSelectedEventId(null);
-                        handleActionSuccess("Patient absent", "Statut mis à jour en ABSENT.");
-                      } catch (error) {
-                        handleActionError("Impossible de marquer le patient absent", error);
-                      } finally {
-                        setIsUpdating(false);
-                      }
-                    }
-                  }}
-                  disabled={isUpdating}
-                >
-                  ✕ Absent
-                </Button>
+                {canMarkPresenceForEvent(selectedEvent) ? (
+                  <>
+                    <Button
+                      variant="primary"
+                      onClick={async () => {
+                        setIsUpdating(true);
+                        try {
+                          await marquerHonore(selectedEvent.id);
+                          await reload();
+                          // Open consultation form after marking present
+                          setConsultationRdvData({
+                            id: selectedEvent.id,
+                            patientId: selectedEvent.patientId,
+                            patientName: selectedEvent.patientName,
+                          });
+                          setSelectedEventId(null);
+                          setConsultationModalOpen(true);
+                          handleActionSuccess("Patient présent", "Vous pouvez maintenant créer la consultation.");
+                        } catch (error) {
+                          handleActionError("Impossible de marquer le rendez-vous comme honoré", error);
+                        } finally {
+                          setIsUpdating(false);
+                        }
+                      }}
+                      disabled={isUpdating}
+                    >
+                      ✓ Patient présent
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={async () => {
+                        if (confirm("Marquer le patient comme absent ?")) {
+                          setIsUpdating(true);
+                          try {
+                            await marquerAbsent(selectedEvent.id);
+                            await reload();
+                            setSelectedEventId(null);
+                            handleActionSuccess("Patient absent", "Statut mis à jour en ABSENT.");
+                          } catch (error) {
+                            handleActionError("Impossible de marquer le patient absent", error);
+                          } finally {
+                            setIsUpdating(false);
+                          }
+                        }
+                      }}
+                      disabled={isUpdating}
+                    >
+                      ✕ Absent
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-sm text-amber-600 bg-amber-50/80 px-4 py-2 rounded-lg">
+                    ⏰ Les actions de présence/absence seront disponibles à partir de l&apos;heure du rendez-vous.
+                  </p>
+                )}
               </>
             )}
 
@@ -391,6 +417,27 @@ export default function MedecinCalendarPage() {
             )}
           </div>
         </Modal>
+      )}
+
+      {consultationRdvData && (
+        <ConsultationFormModal
+          open={consultationModalOpen}
+          onClose={() => {
+            setConsultationModalOpen(false);
+            setConsultationRdvData(null);
+          }}
+          rendezVousId={consultationRdvData.id}
+          patientId={consultationRdvData.patientId}
+          patientName={consultationRdvData.patientName}
+          onSuccess={() => {
+            handleActionSuccess("Consultation créée", "La consultation a été enregistrée avec succès.");
+            setConsultationModalOpen(false);
+            setConsultationRdvData(null);
+          }}
+          onError={(error) => {
+            handleActionError("Impossible de créer la consultation", error);
+          }}
+        />
       )}
     </div>
   );
