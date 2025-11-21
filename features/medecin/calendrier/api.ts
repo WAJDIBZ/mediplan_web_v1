@@ -35,7 +35,7 @@ export async function fetchRendezVousByMonth(year: number, month: number): Promi
             patientId: rdv.patientId,
             patientName: rdv.patient?.fullName || "Patient inconnu",
             medecinId: rdv.medecinId,
-            date: localDate, // Format YYYY-MM-DD using local date
+            date: localDate +1, // Format YYYY-MM-DD using local date
             heureDebut: rdv.debut,
             heureFin: rdv.fin,
             statut: rdv.statut as "PLANIFIE" | "CONFIRME" | "ANNULE" | "HONORE" | "ABSENT",
