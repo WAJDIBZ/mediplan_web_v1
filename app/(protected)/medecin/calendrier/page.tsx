@@ -180,7 +180,8 @@ export default function MedecinCalendarPage() {
                 ))}
 
                 {monthDays.map((day) => {
-                  const iso = day.date.toISOString().split("T")[0];
+                  // Format date as YYYY-MM-DD to match event.date format
+                  const iso = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
                   const dayEvents = eventsByDate.get(iso) ?? [];
                   const isToday = day.isToday;
 
