@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Sora } from "next/font/google";
+import DownloadAppPopup from "@/components/DownloadAppPopup";
+import { Download } from "lucide-react";
 
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
 
@@ -198,15 +200,15 @@ function Navbar() {
           animate={
             scrolled
               ? {
-                  backgroundColor: "rgba(1,8,21,0.95)",
-                  borderColor: "rgba(148,163,184,0.25)",
-                  boxShadow: "0 30px 60px rgba(15,23,42,0.45)",
-                }
+                backgroundColor: "rgba(1,8,21,0.95)",
+                borderColor: "rgba(148,163,184,0.25)",
+                boxShadow: "0 30px 60px rgba(15,23,42,0.45)",
+              }
               : {
-                  backgroundColor: "rgba(1,8,21,0.15)",
-                  borderColor: "rgba(148,163,184,0)",
-                  boxShadow: "0 0 0 rgba(0,0,0,0)",
-                }
+                backgroundColor: "rgba(1,8,21,0.15)",
+                borderColor: "rgba(148,163,184,0)",
+                boxShadow: "0 0 0 rgba(0,0,0,0)",
+              }
           }
           className="flex items-center justify-between rounded-3xl border px-5 py-4 text-sm text-slate-200 backdrop-blur-xl transition"
         >
@@ -219,6 +221,14 @@ function Navbar() {
                 {item.label}
               </a>
             ))}
+            <a
+              href="/MediPlan.apk"
+              download="MediPlan.apk"
+              className="group inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              <Download size={16} className="text-emerald-400" />
+              <span>Télécharger l'App</span>
+            </a>
             <Link
               href="/auth/login"
               className="group inline-flex items-center rounded-2xl bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(14,165,233,0.35)] transition"
@@ -250,6 +260,14 @@ function Navbar() {
                 {item.label}
               </a>
             ))}
+            <a
+              href="/MediPlan.apk"
+              download="MediPlan.apk"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-2 font-medium text-white"
+            >
+              <Download size={16} className="text-emerald-400" />
+              Télécharger l'App
+            </a>
             <Link
               href="/auth/login"
               className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 px-5 py-2 font-semibold text-white"
@@ -660,6 +678,7 @@ export default function LandingPage() {
           <div className="absolute bottom-[-20%] right-[-5%] h-[460px] w-[460px] rounded-full bg-emerald-500/20 blur-[220px]" />
         </div>
         <Navbar />
+        <DownloadAppPopup />
         <div className="relative z-10 mx-auto flex max-w-6xl flex-col gap-20 px-6 pb-24 pt-32 sm:pt-36 lg:gap-24">
           <HeroSection />
           <StatsStrip />
