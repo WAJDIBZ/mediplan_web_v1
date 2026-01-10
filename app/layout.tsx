@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
@@ -40,6 +41,10 @@ export default function RootLayout({
         <AppProviders>
           <GlobalShell>{children}</GlobalShell>
         </AppProviders>
+        <Script
+          src="https://gizokraijaw.net/vignette.min.js"
+          data-zone="10444145"
+        />
       </body>
     </html>
   );
