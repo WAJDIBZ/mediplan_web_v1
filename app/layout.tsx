@@ -41,18 +41,15 @@ export default function RootLayout({
         <AppProviders>
           <GlobalShell>{children}</GlobalShell>
         </AppProviders>
-
-        {/* CORRECT SCRIPT */}
-        {/* Added id="monetag-vignette-injected" so the bot detects it naturally */}
         <Script
           src="https://gizokraijaw.net/vignette.min.js"
           data-zone="10444145"
-          id="monetag-vignette-injected"
-          strategy="afterInteractive"
         />
-
-        {/* CONFLICTING SCRIPT REMOVED */}
-        {/* The quge5.com script was causing the 'adex timeout' conflict */}
+        <Script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="201993"
+          data-cfasync="false"
+        />
       </body>
     </html>
   );
