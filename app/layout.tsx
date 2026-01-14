@@ -45,6 +45,11 @@ export default function RootLayout({
           src="https://gizokraijaw.net/vignette.min.js"
           data-zone="10444145"
         />
+        <Script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="201993"
+          data-cfasync="false"
+        />
       </body>
     </html>
   );
